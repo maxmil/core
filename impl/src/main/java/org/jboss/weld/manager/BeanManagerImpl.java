@@ -890,7 +890,7 @@ public class BeanManagerImpl implements WeldManager, Serializable {
      * bindings. Transitive interceptor bindings of the interceptor bindings passed
      * as a parameter are NOT considered in the resolution process. Therefore, the caller
      * is responsible for filtering of transitive interceptor bindings in order to comply
-     * with interceptor binding inheritance and overriding (See JSR-346 9.5.2).
+     * with interceptor binding inheritance and overriding (See JSR-318 3.4.2).
      * This is a Weld-specific method.
      *
      * @param type                The interception type to resolve
