@@ -30,14 +30,13 @@ import org.jboss.weld.interceptor.spi.metadata.InterceptorMetadata;
 import org.jboss.weld.interceptor.spi.model.InterceptionModel;
 import org.jboss.weld.interceptor.spi.model.InterceptionType;
 
-
 /**
  * This builder shouldn't be reused.
- *
+ * 
  * @author <a href="mailto:mariusb@redhat.com">Marius Bogoevici</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author Martin Kouba
- *
+ * 
  * @param <T> the intercepted entity class
  */
 public class InterceptionModelBuilder<T> {
@@ -59,7 +58,7 @@ public class InterceptionModelBuilder<T> {
     private final Map<InterceptionType, Map<Method, List<InterceptorMetadata<?>>>> methodBoundInterceptors = new HashMap<InterceptionType, Map<Method, List<InterceptorMetadata<?>>>>();
 
     /**
-     *
+     * 
      * @param interceptedEntity
      */
     private InterceptionModelBuilder(T interceptedEntity) {
@@ -67,7 +66,7 @@ public class InterceptionModelBuilder<T> {
     }
 
     /**
-     *
+     * 
      * @param entity
      * @return
      */
@@ -151,12 +150,18 @@ public class InterceptionModelBuilder<T> {
 
         public void with(InterceptorMetadata<?>... interceptors) {
             for (InterceptionType interceptionType : interceptionTypes) {
-                appendInterceptors(interceptionType, method, interceptors);
+                appendInterceptors(interceptionType, method, Arrays.asList(interceptors));
+            }
+        }
+
+        public void withNew(InterceptorMetadata<?>... interceptors) {
+            for (InterceptionType interceptionType : interceptionTypes) {
+                appendInterceptors(interceptionType, method, filterExisting(interceptionType, method, interceptors));
             }
         }
     }
 
-    private void appendInterceptors(InterceptionType interceptionType, Method method, InterceptorMetadata<?>... interceptors) {
+    private void appendInterceptors(InterceptionType interceptionType, Method method, List<InterceptorMetadata<?>> interceptors) {
 
         checkModelNotBuilt();
 
@@ -169,7 +174,7 @@ public class InterceptionModelBuilder<T> {
                 interceptorsList = new ArrayList<InterceptorMetadata<?>>();
                 globalInterceptors.put(interceptionType, interceptorsList);
             }
-            interceptorsList.addAll(Arrays.asList(interceptors));
+            interceptorsList.addAll(interceptors);
         } else {
             if (null == methodBoundInterceptors.get(interceptionType)) {
                 methodBoundInterceptors.put(interceptionType, new HashMap<Method, List<InterceptorMetadata<?>>>());
@@ -179,11 +184,41 @@ public class InterceptionModelBuilder<T> {
                 interceptorsList = new ArrayList<InterceptorMetadata<?>>();
                 methodBoundInterceptors.get(interceptionType).put(method, interceptorsList);
             }
-            interceptorsList.addAll(Arrays.asList(interceptors));
+            interceptorsList.addAll(interceptors);
         }
-        allInterceptors.addAll(Arrays.asList(interceptors));
+        allInterceptors.addAll(interceptors);
     }
 
+    private List<InterceptorMetadata<?>> filterExisting(InterceptionType interceptionType, Method method, InterceptorMetadata<?>... interceptors) {
+        List<InterceptorMetadata<?>> filtered = new ArrayList<InterceptorMetadata<?>>();
+        for (InterceptorMetadata<?> interceptor : interceptors) {
+            boolean found = false;
+            List<InterceptorMetadata<?>> globalInterceptorsList = globalInterceptors.get(interceptionType);
+            if (globalInterceptorsList != null) {
+                for (InterceptorMetadata<?> appended : globalInterceptors.get(interceptionType)) {
+                    if (interceptor.getInterceptorClass().getJavaClass() == appended.getInterceptorClass().getJavaClass()) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (!found && method != null) {
+                List<InterceptorMetadata<?>> methodInterceptorsList = methodBoundInterceptors.get(interceptionType).get(method);
+                if (methodInterceptorsList != null) {
+                    for (InterceptorMetadata<?> appended : methodInterceptorsList) {
+                        if (interceptor.getInterceptorClass().getJavaClass() == appended.getInterceptorClass().getJavaClass()) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!found) {
+                filtered.add(interceptor);
+            }
+        }
+        return filtered;
+    }
 
     T getInterceptedEntity() {
         return interceptedEntity;
@@ -214,7 +249,7 @@ public class InterceptionModelBuilder<T> {
     }
 
     private void checkModelNotBuilt() {
-        if(isModelBuilt) {
+        if (isModelBuilt) {
             throw new IllegalStateException("InterceptionModelBuilder cannot be reused");
         }
     }

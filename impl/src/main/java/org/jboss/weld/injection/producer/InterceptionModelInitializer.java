@@ -202,7 +202,7 @@ public class InterceptionModelInitializer<T> {
                 throw new DeploymentException(FINAL_INTERCEPTED_BEAN_METHOD_NOT_ALLOWED, method, methodBoundInterceptors.get(0).getBeanClass().getName());
             }
             Method javaMethod = Reflections.<AnnotatedMethod<T>>cast(method).getJavaMember();
-            builder.intercept(interceptionType, javaMethod).with(toSerializableContextualArray(methodBoundInterceptors));
+            builder.intercept(interceptionType, javaMethod).withNew(toSerializableContextualArray(methodBoundInterceptors));
         }
     }
 
@@ -217,7 +217,7 @@ public class InterceptionModelInitializer<T> {
         }
         List<Interceptor<?>> constructorBoundInterceptors = manager.resolveInterceptors(InterceptionType.AROUND_CONSTRUCT, constructorBindings);
         if (!constructorBoundInterceptors.isEmpty()) {
-            builder.intercept(InterceptionType.AROUND_CONSTRUCT).with(toSerializableContextualArray(constructorBoundInterceptors));
+            builder.intercept(InterceptionType.AROUND_CONSTRUCT).withNew(toSerializableContextualArray(constructorBoundInterceptors));
         }
     }
 
