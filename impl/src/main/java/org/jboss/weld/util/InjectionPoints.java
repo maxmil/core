@@ -36,6 +36,7 @@ import org.jboss.weld.util.reflection.Reflections;
 
 /**
  * Helper class for {@link InjectionPoint} processing.
+ *
  * @author Jozef Hartinger
  *
  */
@@ -93,9 +94,37 @@ public class InjectionPoints {
             return Reflections.cast(injectionPoint);
         }
         if (injectionPoint.getAnnotated() instanceof AnnotatedField<?>) {
-            return FieldInjectionPoint.<T, X>silent(ForwardingFieldInjectionPointAttributes.<T, X>of(injectionPoint));
+            return FieldInjectionPoint.<T, X> silent(ForwardingFieldInjectionPointAttributes.<T, X> of(injectionPoint));
         } else {
-            return ParameterInjectionPointImpl.<T, X>silent(ForwardingParameterInjectionPointAttributes.<T, X>of(injectionPoint));
+            return ParameterInjectionPointImpl.<T, X> silent(ForwardingParameterInjectionPointAttributes.<T, X> of(injectionPoint));
         }
+    }
+
+    private static <T extends WeldInjectionPointAttributes<?, ?>> boolean hasFieldInjectionPointMetadata(List<? extends Set<T>> fieldInjectionPoints) {
+        for (Set<T> injectionPointSet : fieldInjectionPoints) {
+            for (InjectionPoint injectionPoint : injectionPointSet) {
+                if (injectionPoint.getType() == InjectionPoint.class) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasParameterInjectionPointMetadata(List<Set<MethodInjectionPoint<?, ?>>> methodInjectionPoints) {
+        for (Set<MethodInjectionPoint<?, ?>> i : methodInjectionPoints) {
+            for (MethodInjectionPoint<?, ?> method : i) {
+                for (ParameterInjectionPoint<?, ?> parameter : method.getParameterInjectionPoints()) {
+                    if (parameter.getType() == InjectionPoint.class) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public static <T extends WeldInjectionPointAttributes<?, ?>> boolean hasInjectionPointMetadata(List<? extends Set<T>> fieldInjectionPoints, List<Set<MethodInjectionPoint<?, ?>>> methodInjectionPoints){
+        return hasFieldInjectionPointMetadata(fieldInjectionPoints) || hasParameterInjectionPointMetadata(methodInjectionPoints);
     }
 }

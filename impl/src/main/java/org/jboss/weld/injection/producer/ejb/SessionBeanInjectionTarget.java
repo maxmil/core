@@ -31,6 +31,9 @@ import org.jboss.weld.bean.SessionBean;
 import org.jboss.weld.bean.proxy.CombinedInterceptorAndDecoratorStackMethodHandler;
 import org.jboss.weld.bean.proxy.MethodHandler;
 import org.jboss.weld.bean.proxy.ProxyObject;
+import org.jboss.weld.injection.FieldInjectionPoint;
+import org.jboss.weld.injection.InjectionPointFactory;
+import org.jboss.weld.injection.MethodInjectionPoint;
 import org.jboss.weld.injection.producer.BeanInjectionTarget;
 import org.jboss.weld.injection.producer.DefaultInjector;
 import org.jboss.weld.injection.producer.DefaultInstantiator;
@@ -40,6 +43,8 @@ import org.jboss.weld.injection.producer.StatelessSessionBeanInjector;
 import org.jboss.weld.injection.producer.SubclassDecoratorApplyingInstantiator;
 import org.jboss.weld.injection.producer.SubclassedComponentInstantiator;
 import org.jboss.weld.manager.BeanManagerImpl;
+import org.jboss.weld.util.BeanMethods;
+import org.jboss.weld.util.InjectionPoints;
 import org.jboss.weld.util.Types;
 import org.jboss.weld.util.reflection.Reflections;
 
@@ -70,10 +75,12 @@ public class SessionBeanInjectionTarget<T> extends BeanInjectionTarget<T> {
 
     @Override
     protected Injector<T> initInjector(EnhancedAnnotatedType<T> type, Bean<T> bean, BeanManagerImpl beanManager) {
-        if (Reflections.<SessionBean<T>>cast(bean).getEjbDescriptor().isStateless()) {
-            return new StatelessSessionBeanInjector<T>(type, bean, beanManager);
+        List<Set<FieldInjectionPoint<?, ?>>> injectableFields = InjectionPointFactory.instance().getFieldInjectionPoints(bean, type, beanManager);
+        List<Set<MethodInjectionPoint<?, ?>>> initializerMethods = BeanMethods.getInitializerMethods(bean, type, beanManager);
+        if (Reflections.<SessionBean<T>>cast(bean).getEjbDescriptor().isStateless() && InjectionPoints.hasInjectionPointMetadata(injectableFields, initializerMethods)) {
+            return new StatelessSessionBeanInjector<T>(injectableFields, initializerMethods, beanManager);
         }
-        return new DefaultInjector<T>(type, bean, beanManager);
+        return new DefaultInjector<T>(injectableFields, initializerMethods);
     }
 
     @Override

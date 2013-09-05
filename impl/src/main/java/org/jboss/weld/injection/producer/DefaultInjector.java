@@ -53,6 +53,11 @@ public class DefaultInjector<T> implements Injector<T> {
         this.initializerMethods = BeanMethods.getInitializerMethods(bean, type, beanManager);
     }
 
+    public DefaultInjector(List<Set<FieldInjectionPoint<?, ?>>> injectableFields, List<Set<MethodInjectionPoint<?, ?>>> initializerMethods) {
+        this.injectableFields = injectableFields;
+        this.initializerMethods = initializerMethods;
+    }
+
     @Override
     public void registerInjectionPoints(Set<InjectionPoint> injectionPoints) {
         injectionPoints.addAll(InjectionPoints.flattenInjectionPoints(this.injectableFields));
@@ -62,6 +67,7 @@ public class DefaultInjector<T> implements Injector<T> {
     @Override
     public void inject(final T instance, final CreationalContext<T> ctx, final BeanManagerImpl manager, SlimAnnotatedType<T> type, InjectionTarget<T> injectionTarget) {
         new InjectionContextImpl<T>(manager, injectionTarget, type, instance) {
+            @Override
             public void proceed() {
                 inject(instance, ctx, manager);
             }

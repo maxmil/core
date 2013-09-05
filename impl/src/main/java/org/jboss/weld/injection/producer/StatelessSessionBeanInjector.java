@@ -16,12 +16,15 @@
  */
 package org.jboss.weld.injection.producer;
 
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.Bean;
+import java.util.List;
+import java.util.Set;
 
-import org.jboss.weld.annotated.enhanced.EnhancedAnnotatedType;
+import javax.enterprise.context.spi.CreationalContext;
+
 import org.jboss.weld.injection.CurrentInjectionPoint;
 import org.jboss.weld.injection.DynamicInjectionPoint;
+import org.jboss.weld.injection.FieldInjectionPoint;
+import org.jboss.weld.injection.MethodInjectionPoint;
 import org.jboss.weld.manager.BeanManagerImpl;
 
 /**
@@ -38,8 +41,8 @@ public class StatelessSessionBeanInjector<T> extends DefaultInjector<T> {
 
     private final CurrentInjectionPoint currentInjectionPoint;
 
-    public StatelessSessionBeanInjector(EnhancedAnnotatedType<T> type, Bean<T> bean, BeanManagerImpl beanManager) {
-        super(type, bean, beanManager);
+    public StatelessSessionBeanInjector(List<Set<FieldInjectionPoint<?, ?>>> injectableFields, List<Set<MethodInjectionPoint<?, ?>>> initializerMethods, BeanManagerImpl beanManager){
+        super(injectableFields, initializerMethods);
         this.currentInjectionPoint = beanManager.getServices().get(CurrentInjectionPoint.class);
     }
 
