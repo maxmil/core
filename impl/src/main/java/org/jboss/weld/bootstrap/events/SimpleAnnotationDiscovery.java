@@ -21,6 +21,8 @@ import java.lang.annotation.Inherited;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Set;
 
 import org.jboss.weld.resources.ReflectionCache;
 import org.jboss.weld.resources.spi.AnnotationDiscovery;
@@ -100,5 +102,10 @@ public class SimpleAnnotationDiscovery implements AnnotationDiscovery {
 
     @Override
     public void cleanup() {
+    }
+
+    @Override
+    public Set<String> getVetoedClasses() {
+        return Collections.emptySet();
     }
 }

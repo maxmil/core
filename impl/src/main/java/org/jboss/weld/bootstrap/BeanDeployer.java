@@ -163,9 +163,11 @@ public class BeanDeployer extends AbstractBeanDeployer<BeanDeployerEnvironment> 
         return this;
     }
 
-    public BeanDeployer addClasses(Iterable<String> classes) {
+    public BeanDeployer addClasses(Iterable<String> classes, Set<String> vetoedClasses) {
         for (String className : classes) {
-            addClass(className);
+            if(vetoedClasses.contains(className)){
+                addClass(className);
+            }
         }
         return this;
     }

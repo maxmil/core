@@ -67,6 +67,7 @@ import org.jboss.weld.metadata.ScanningPredicate;
 import org.jboss.weld.persistence.PersistenceApiAbstraction;
 import org.jboss.weld.resources.DefaultResourceLoader;
 import org.jboss.weld.resources.WeldClassLoaderResourceLoader;
+import org.jboss.weld.resources.spi.AnnotationDiscovery;
 import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jboss.weld.security.spi.SecurityServices;
 import org.jboss.weld.servlet.ServletApi;
@@ -205,7 +206,8 @@ public class BeanDeployment {
     }
 
     public void createClasses() {
-        beanDeployer.addClasses(loadClasses());
+        AnnotationDiscovery discovery = beanDeploymentArchive.getServices().get(AnnotationDiscovery.class);
+        beanDeployer.addClasses(loadClasses(), discovery.getVetoedClasses());
     }
 
     /**
